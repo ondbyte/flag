@@ -1,19 +1,24 @@
- # turbo_flag
+package flag_test
 
-a drop in replacement for flag package which is included in the core go, but with additional capabilities like 
-- Writing command-line apps with subcommands
-- Loading configuration file like json,yaml,toml.
-- Binding variable/s to values from a configuration file
-- Loading `.env` files
-- Binding variable/s to environment variable/s
-- Enumeration of the values of the flag
-- Short alias for a flag
+import (
+	"fmt"
+	"os"
+	"testing"
 
-etc.
-### **Sub-commands**
-example: a git program with commit and remote sub-commands
-```go
-import "github.com/ondbyte/turbo_flag"
+	flag "github.com/ondbyte/turbo_flag"
+)
+
+func TestSubCmd(t *testing.T) {
+	//run our program
+	os.Args = []string{"<will_be_ignored>", "commit", "--branch", "stable"}
+	main()
+	os.Args = []string{"<will_be_ignored>", "remote", "--name", "origin"}
+	main()
+	os.Args = []string{"<will_be_ignored>", "commit"}
+	main()
+	os.Args = []string{"<will_be_ignored>", "remote"}
+	main()
+}
 
 func main() {
 	flag.MainCmd(
@@ -68,6 +73,3 @@ func main() {
 		},
 	)
 }
-
-
-```
