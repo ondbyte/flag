@@ -541,7 +541,7 @@ type Command struct {
 	errorHandling ErrorHandling
 	output        io.Writer // Deprecated: nil means stderr; use Output() accessor
 	cfgPath       string
-	cfg           map[string]interface{}
+	cfg           *map[string]interface{}
 	SubCmds       map[string]*subCommand
 	parentCmd     *Command
 }
@@ -1103,12 +1103,13 @@ type Cmd interface {
 // calls fn with os.args
 // see here https://github.com/ondbyte/turbo_flag#alternative
 func MainCmd(name string, usage string, errorHandling ErrorHandling, onCmd func(cmd Cmd, args []string)) {
+	cfg:=make(map[string]interface{})
 	f := &Command{
 		name:          name,
 		errorHandling: errorHandling,
 		SubCmds:       make(map[string]*subCommand),
 		ptrs:          make(map[string]*Flag),
-		cfg:           make(map[string]interface{}),
+		cfg:           &cfg,
 		usg:           usage,
 	}
 	f.Usage = func() {
@@ -1189,7 +1190,7 @@ func (fs *Command) LoadCfg(path string) (err error) {
 	if err != nil {
 		return fmt.Errorf("unable to read config file : %v", err)
 	}
-	fs.cfg = mapContent
+	*fs.cfg = mapContent
 	bindCfgRecursiveAfterLoadCfg(fs)
 	return nil
 }
@@ -1300,17 +1301,17 @@ func (fs *Command) Cfg(cfgs ...string) *flagFeature {
 
 func (fs *Command) bindCfg(to *Flag, cfgs ...string) {
 	for _, notation := range cfgs {
-		val, err := getValueByDotNotation(fs.cfg, notation)
+		val, err := getValueByDotNotation(*fs.cfg, notation)
 		if err == nil && val != "" {
 			err := to.Set(val)
 			if err != nil {
 				panic(fmt.Errorf("unable to set notation %v value %v to flag %v", notation, val, to.Name))
 			}
 		} else {
-			cs, err := setValueByDotNotation(fs.cfg, notation, to.Value.String())
+			cs, err := setValueByDotNotation(*fs.cfg, notation, to.Value.String())
 			if err == nil {
 				for k, v := range cs {
-					fs.cfg[k] = v
+					(*fs.cfg)[k] = v
 				}
 			}
 		}

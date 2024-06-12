@@ -58,7 +58,7 @@ func MapToJSON(data map[string]interface{}) (string, error) {
 	return string(jsonContent), nil
 }
 
-//map to a TOML string
+// map to a TOML string
 func MapToTOML(data map[string]interface{}) (string, error) {
 	b := new(bytes.Buffer)
 	w := toml.NewEncoder(b)
@@ -141,6 +141,9 @@ func ReadProperties(content string) (map[string]interface{}, error) {
 } */
 
 func jsonnify(v interface{}) (string, error) {
+	if v == nil {
+		return "", nil
+	}
 	_, ok := v.(map[string]interface{})
 	if ok {
 		b, err := json.Marshal(v)
